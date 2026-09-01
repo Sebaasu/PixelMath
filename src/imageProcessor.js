@@ -1,11 +1,11 @@
 /**
  * Image Processor for PixelMath:
- * - Downsamples imported images/URLs to target grid dimensions (12x12, 16x16, 24x24, 32x32)
- * - Automatically detects distinct child-friendly colors without forcing duplicate names (e.g. Gris, Gris 2).
- * - Merges similar shades into clean, unique friendly base colors.
+ * - Includes Auto-Crop (Bounding Box Trimming) to eliminate empty transparent margins
+ * - Multi-proxy CORS fallback for reliable image loading from any URL
+ * - Snaps to child-friendly base palette with auto color count detection
  */
 
-// Child-friendly standard color dictionary for automatic color snapping
+// Child-friendly standard color dictionary
 const FRIENDLY_COLOR_DICTIONARY = [
   { name: 'Blanco', rgb: [255, 255, 255], hex: '#ffffff' },
   { name: 'Negro', rgb: [25, 25, 25], hex: '#191919' },
@@ -36,14 +36,14 @@ const FRIENDLY_COLOR_DICTIONARY = [
   { name: 'Crema / Piel', rgb: [255, 215, 175], hex: '#ffd7af' }
 ];
 
-export function processImageFile(file, gridWidth, gridHeight, maxColors = 8) {
+export function processImageFile(file, gridWidth, gridHeight, maxColors = 8, autoCrop = true) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         try {
-          const result = processImageElement(img, gridWidth, gridHeight, maxColors);
+          const result = processImageElement(img, gridWidth, gridHeight, maxColors, autoCrop);
           resolve(result);
         } catch (err) {
           reject(err);
@@ -57,51 +57,111 @@ export function processImageFile(file, gridWidth, gridHeight, maxColors = 8) {
   });
 }
 
-export function processImageUrl(imageUrl, gridWidth, gridHeight, maxColors = 8) {
+/**
+ * Robust Image URL Processor with multi-stage CORS proxy fallback
+ */
+export function processImageUrl(imageUrl, gridWidth, gridHeight, maxColors = 8, autoCrop = true) {
   return new Promise((resolve, reject) => {
-    const tryLoad = (url, isProxy = false) => {
+    // List of CORS proxy strategies
+    const proxyChain = [
+      (url) => url, // 1. Direct fetch
+      (url) => `https://images.weserv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}`, // 2. weserv.nl (fast image CDN proxy)
+      (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, // 3. allorigins
+      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}` // 4. corsproxy.io
+    ];
+
+    let currentAttempt = 0;
+
+    const tryNextProxy = () => {
+      if (currentAttempt >= proxyChain.length) {
+        reject(new Error('No se pudo cargar la imagen desde la URL. La imagen está protegida o el servidor no responde.'));
+        return;
+      }
+
+      const getUrl = proxyChain[currentAttempt];
+      currentAttempt++;
+
       const img = new Image();
       img.crossOrigin = 'anonymous';
 
       img.onload = () => {
         try {
-          const result = processImageElement(img, gridWidth, gridHeight, maxColors);
+          const result = processImageElement(img, gridWidth, gridHeight, maxColors, autoCrop);
           resolve(result);
         } catch (err) {
-          reject(err);
+          tryNextProxy();
         }
       };
 
       img.onerror = () => {
-        if (!isProxy) {
-          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
-          tryLoad(proxyUrl, true);
-        } else {
-          reject(new Error('No se pudo cargar la imagen desde la URL especificada (error CORS/red).'));
-        }
+        tryNextProxy();
       };
 
-      img.src = url;
+      img.src = getUrl(imageUrl);
     };
 
-    tryLoad(imageUrl);
+    tryNextProxy();
   });
 }
 
-function processImageElement(img, targetWidth, targetHeight, maxColors = 8) {
-  const canvas = document.createElement('canvas');
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d');
+function processImageElement(img, targetWidth, targetHeight, maxColors = 8, autoCrop = true) {
+  // Step 1: Draw full raw image to temp canvas
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = img.naturalWidth || img.width;
+  tempCanvas.height = img.naturalHeight || img.height;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.drawImage(img, 0, 0);
 
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+  let sourceCanvas = tempCanvas;
+  let srcX = 0;
+  let srcY = 0;
+  let srcW = tempCanvas.width;
+  let srcH = tempCanvas.height;
 
-  const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+  // Step 2: Auto-Crop (Bounding Box Trimming) if transparent padding exists
+  if (autoCrop && tempCanvas.width > 0 && tempCanvas.height > 0) {
+    const rawData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
+    let minX = tempCanvas.width;
+    let minY = tempCanvas.height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < tempCanvas.height; y++) {
+      for (let x = 0; x < tempCanvas.width; x++) {
+        const alpha = rawData[(y * tempCanvas.width + x) * 4 + 3];
+        if (alpha > 30) { // Non-transparent pixel threshold
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    // If valid non-empty bounding box found, crop to it with 1-pixel margin
+    if (maxX >= minX && maxY >= minY) {
+      const margin = 1;
+      srcX = Math.max(0, minX - margin);
+      srcY = Math.max(0, minY - margin);
+      srcW = Math.min(tempCanvas.width - srcX, (maxX - minX + 1) + margin * 2);
+      srcH = Math.min(tempCanvas.height - srcY, (maxY - minY + 1) + margin * 2);
+    }
+  }
+
+  // Step 3: Draw cropped region scaled down to target grid size
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = targetWidth;
+  finalCanvas.height = targetHeight;
+  const finalCtx = finalCanvas.getContext('2d');
+
+  finalCtx.imageSmoothingEnabled = false; // Keep crisp pixels!
+  finalCtx.drawImage(sourceCanvas, srcX, srcY, srcW, srcH, 0, 0, targetWidth, targetHeight);
+
+  const imgData = finalCtx.getImageData(0, 0, targetWidth, targetHeight);
   const pixels = imgData.data;
 
-  // 1. Group pixels by friendly color index
-  const colorCounts = new Map(); // friendlyIdx -> frequency count
+  // Step 4: Group pixels by friendly color index
+  const colorCounts = new Map();
   const pixelFriendlyIndices = [];
   let pixelIndex = 0;
 
@@ -128,13 +188,13 @@ function processImageElement(img, targetWidth, targetHeight, maxColors = 8) {
     throw new Error('La imagen dada es completamente transparente.');
   }
 
-  // 2. Automatically select distinct unique colors (up to maxColors cap if needed)
+  // Step 5: Automatically select unique friendly colors
   const sortedFriendlyIndices = Array.from(colorCounts.entries())
-    .sort((a, b) => b[1] - a[1]) // most frequent first
+    .sort((a, b) => b[1] - a[1])
     .slice(0, maxColors)
     .map(entry => entry[0]);
 
-  // 3. Build unique palette items
+  // Step 6: Build unique palette items
   const friendlyIndexToPaletteId = new Map();
   const palette = sortedFriendlyIndices.map((fIdx, pIdx) => {
     const fColor = FRIENDLY_COLOR_DICTIONARY[fIdx];
@@ -148,7 +208,7 @@ function processImageElement(img, targetWidth, targetHeight, maxColors = 8) {
     };
   });
 
-  // 4. Build grid matrix with pixel mapping
+  // Step 7: Build grid matrix
   const grid = [];
   let pIdx = 0;
   for (let y = 0; y < targetHeight; y++) {
@@ -156,11 +216,10 @@ function processImageElement(img, targetWidth, targetHeight, maxColors = 8) {
     for (let x = 0; x < targetWidth; x++) {
       const fIdx = pixelFriendlyIndices[pIdx];
       if (fIdx === -1) {
-        row.push(0); // Transparent
+        row.push(0);
       } else if (friendlyIndexToPaletteId.has(fIdx)) {
         row.push(friendlyIndexToPaletteId.get(fIdx));
       } else {
-        // Fallback for pixels of truncated colors: match to closest color in selected palette
         const pixelRgb = [pixels[pIdx * 4], pixels[pIdx * 4 + 1], pixels[pIdx * 4 + 2]];
         const closestPaletteId = findNearestPaletteColorId(pixelRgb, palette);
         row.push(closestPaletteId);
@@ -216,8 +275,4 @@ function findNearestPaletteColorId(rgb, palette) {
   }
 
   return bestId;
-}
-
-function rgbToHex(r, g, b) {
-  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
