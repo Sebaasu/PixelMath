@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import PresetGalleryModal from './components/PresetGalleryModal';
 import ImageUploadModal from './components/ImageUploadModal';
 import PokemonSearchModal from './components/PokemonSearchModal';
+import MovieCharactersModal from './components/MovieCharactersModal';
 import PixelEditor from './components/PixelEditor';
 import MathConfigPanel from './components/MathConfigPanel';
 import PrintWorksheet from './components/PrintWorksheet';
@@ -30,6 +31,7 @@ export default function App() {
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isPokemonOpen, setIsPokemonOpen] = useState(false);
+  const [isMovieOpen, setIsMovieOpen] = useState(false);
 
   // Compute math equations for palette based on current custom config
   const paletteWithMath = useMemo(() => {
@@ -72,7 +74,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top Header Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -80,6 +82,7 @@ export default function App() {
         onOpenPresets={() => setIsPresetsOpen(true)}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenPokemon={() => setIsPokemonOpen(true)}
+        onOpenMovieCharacters={() => setIsMovieOpen(true)}
         onPrint={handlePrint}
       />
 
@@ -112,16 +115,16 @@ export default function App() {
             />
 
             {/* Switch to preview button banner */}
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between shadow-md gap-4">
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between shadow-lg gap-4">
               <div>
-                <h3 className="text-lg font-bold font-heading">¿Listo para ver tu hoja impresa?</h3>
+                <h3 className="text-lg font-bold font-heading">¿Listo para ver tu hoja impresa en Horizontal (Landscape)?</h3>
                 <p className="text-sm opacity-90">
-                  Revisa la disposición horizontal con el arte a la derecha (2/3 de hoja) y la leyenda vertical a la izquierda.
+                  Revisa el diseño aprovechado a 2 columnas con el arte a la derecha (2/3 de hoja) y la leyenda vertical a la izquierda.
                 </p>
               </div>
               <button
                 onClick={() => setActiveTab('print')}
-                className="px-5 py-2.5 bg-white text-indigo-700 font-bold rounded-xl shadow hover:bg-indigo-50 transition-colors shrink-0"
+                className="px-5 py-2.5 bg-white text-indigo-900 font-bold rounded-xl shadow hover:bg-indigo-50 transition-colors shrink-0"
               >
                 Ir a Vista Previa e Impresión
               </button>
@@ -162,6 +165,12 @@ export default function App() {
         isOpen={isPokemonOpen}
         onClose={() => setIsPokemonOpen(false)}
         onPokemonSelected={handleImageProcessed}
+      />
+
+      <MovieCharactersModal
+        isOpen={isMovieOpen}
+        onClose={() => setIsMovieOpen(false)}
+        onCharacterSelected={handleImageProcessed}
       />
     </div>
   );
