@@ -11,6 +11,12 @@
   }
 }
 
+/* Intermediate eye-friendly theme background */
+body {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
 /* Strict Single-Page Print CSS - A4 & Letter Landscape */
 @media print {
   @page {

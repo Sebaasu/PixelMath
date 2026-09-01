@@ -93,17 +93,17 @@ export default function PixelEditor({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col lg:flex-row gap-8">
+    <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-md flex flex-col lg:flex-row gap-8 text-slate-100">
       {/* Left: Interactive Pixel Grid Canvas */}
       <div className="flex-1 flex flex-col items-center">
         {/* Editor Toolbar Header */}
-        <div className="w-full flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100">
+        <div className="w-full flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
           {/* Tool selectors */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1">
+          <div className="flex items-center bg-slate-950 p-1 rounded-xl gap-1 border border-slate-800">
             <button
               onClick={() => setTool('pencil')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                tool === 'pencil' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                tool === 'pencil' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <Paintbrush className="w-4 h-4" />
@@ -112,7 +112,7 @@ export default function PixelEditor({
             <button
               onClick={() => setTool('bucket')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                tool === 'bucket' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                tool === 'bucket' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <PaintBucket className="w-4 h-4" />
@@ -121,7 +121,7 @@ export default function PixelEditor({
             <button
               onClick={() => setTool('eraser')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                tool === 'eraser' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                tool === 'eraser' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <Eraser className="w-4 h-4" />
@@ -131,13 +131,13 @@ export default function PixelEditor({
 
           {/* Canvas Size and Reset */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-xs font-semibold text-slate-600">
+            <div className="flex items-center gap-1 text-xs font-semibold text-slate-300">
               <Grid className="w-4 h-4 text-slate-400" />
               <span>Tamaño:</span>
               <select
                 value={gridWidth}
                 onChange={(e) => onChangeDimensions(Number(e.target.value))}
-                className="bg-slate-100 border-none text-xs rounded-lg px-2 py-1 font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2 py-1 font-semibold text-slate-200 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
                 <option value={12}>12 x 12</option>
                 <option value={16}>16 x 16</option>
@@ -148,7 +148,7 @@ export default function PixelEditor({
 
             <button
               onClick={handleClearGrid}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-950/40 rounded-lg transition-colors"
               title="Limpiar todo el lienzo"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -159,13 +159,13 @@ export default function PixelEditor({
 
         {/* The Grid Canvas Container with strict 1:1 aspect ratio per cell */}
         <div
-          className="select-none bg-slate-200 p-2 rounded-xl shadow-inner border border-slate-300 touch-none max-w-full overflow-auto"
+          className="select-none bg-slate-950 p-2.5 rounded-2xl shadow-xl border border-slate-800 touch-none max-w-full overflow-auto"
           onMouseDown={() => setIsMouseDown(true)}
           onMouseUp={() => setIsMouseDown(false)}
           onMouseLeave={() => setIsMouseDown(false)}
         >
           <div
-            className="grid bg-slate-300 border border-slate-400 shadow-sm"
+            className="grid bg-slate-800 border border-slate-700 shadow-inner"
             style={{
               gridTemplateColumns: `repeat(${gridWidth}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${gridHeight}, minmax(0, 1fr))`,
@@ -184,7 +184,7 @@ export default function PixelEditor({
                     key={`${rIdx}-${cIdx}`}
                     onMouseDown={() => handleCellClick(rIdx, cIdx)}
                     onMouseEnter={() => handleMouseEnter(rIdx, cIdx)}
-                    className="cursor-pointer transition-colors relative flex items-center justify-center font-mono text-[9px] font-bold select-none border-[0.5px] border-slate-300 hover:opacity-80"
+                    className="cursor-pointer transition-colors relative flex items-center justify-center font-mono text-[9px] font-bold select-none border-[0.5px] border-slate-700/60 hover:opacity-80"
                     style={{
                       backgroundColor: bgHex,
                       aspectRatio: '1 / 1'
@@ -212,13 +212,13 @@ export default function PixelEditor({
       </div>
 
       {/* Right: Color Palette Control */}
-      <div className="w-full lg:w-72 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+      <div className="w-full lg:w-72 bg-slate-800/60 p-4 rounded-xl border border-slate-700/60 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
-            <h3 className="font-bold text-sm font-heading text-slate-800">Paleta de Colores</h3>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-700">
+            <h3 className="font-bold text-sm font-heading text-slate-200">Paleta de Colores</h3>
             <button
               onClick={handleAddColor}
-              className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded-lg"
+              className="flex items-center gap-1 text-xs font-semibold text-indigo-300 hover:text-indigo-200 bg-indigo-950/60 border border-indigo-700/50 px-2 py-1 rounded-lg"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Añadir Color</span>
@@ -237,8 +237,8 @@ export default function PixelEditor({
                   }}
                   className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${
                     isActive
-                      ? 'border-indigo-500 bg-white ring-2 ring-indigo-100 shadow-sm'
-                      : 'border-slate-200 bg-white hover:border-slate-300'
+                      ? 'border-indigo-500 bg-slate-900 ring-2 ring-indigo-500/30 shadow-sm'
+                      : 'border-slate-700/80 bg-slate-900/60 hover:border-slate-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -253,10 +253,10 @@ export default function PixelEditor({
 
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900">ID #{colorItem.id}</span>
+                        <span className="text-xs font-bold text-slate-100">ID #{colorItem.id}</span>
                         <span className="text-[10px] text-slate-400 font-mono uppercase">{colorItem.hex}</span>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-medium">{colorItem.name}</span>
+                      <span className="text-[11px] text-slate-300 font-medium">{colorItem.name}</span>
                     </div>
                   </div>
 
@@ -265,7 +265,7 @@ export default function PixelEditor({
                       e.stopPropagation();
                       handleRemoveColor(colorItem.id);
                     }}
-                    className="p-1 text-slate-300 hover:text-red-500 rounded-lg transition-colors"
+                    className="p-1 text-slate-500 hover:text-red-400 rounded-lg transition-colors"
                     title="Eliminar este color"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -276,8 +276,8 @@ export default function PixelEditor({
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-200 text-center">
-          <p className="text-xs text-slate-500">
+        <div className="mt-4 pt-3 border-t border-slate-700/60 text-center">
+          <p className="text-xs text-slate-400">
             Cada ID de color corresponderá a un resultado matemático en la leyenda final.
           </p>
         </div>
