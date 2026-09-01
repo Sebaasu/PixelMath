@@ -1,6 +1,6 @@
 /**
  * Image Processor for PixelMath:
- * - Downsamples imported images to target grid dimensions (12x12, 16x16, 24x24, 32x32)
+ * - Downsamples imported images/URLs to target grid dimensions (12x12, 16x16, 24x24, 32x32)
  * - Performs K-Means color quantization to reduce colors to user-specified palette size (3 - 10)
  * - Returns matrix grid and generated palette
  */
@@ -26,14 +26,50 @@ export function processImageFile(file, gridWidth, gridHeight, maxColors) {
   });
 }
 
+/**
+ * Loads an image from an HTTP/HTTPS URL and processes it.
+ * Uses CORS proxy fallback if direct load encounters CORS restriction.
+ */
+export function processImageUrl(imageUrl, gridWidth, gridHeight, maxColors) {
+  return new Promise((resolve, reject) => {
+    const tryLoad = (url, isProxy = false) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        try {
+          const result = processImageElement(img, gridWidth, gridHeight, maxColors);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      img.onerror = () => {
+        if (!isProxy) {
+          // Fallback to CORS proxy
+          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+          tryLoad(proxyUrl, true);
+        } else {
+          reject(new Error('No se pudo cargar la imagen desde la URL especificada (error CORS/red).'));
+        }
+      };
+
+      img.src = url;
+    };
+
+    tryLoad(imageUrl);
+  });
+}
+
 function processImageElement(img, targetWidth, targetHeight, maxColors) {
   const canvas = document.createElement('canvas');
   canvas.width = targetWidth;
   canvas.height = targetHeight;
   const ctx = canvas.getContext('2d');
 
-  // Draw image scaled down to grid dimensions using smooth or sharp scaling
-  ctx.imageSmoothingEnabled = true;
+  // Draw image scaled down to grid dimensions
+  ctx.imageSmoothingEnabled = false; // Sharp pixel rendering for sprites!
   ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
   const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
@@ -98,23 +134,20 @@ function processImageElement(img, targetWidth, targetHeight, maxColors) {
 
 // Simple K-Means implementation for RGB pixels
 function kMeansQuantize(pixels, k, iterations = 10) {
-  // Initialize centroids by picking evenly spaced pixels
-  const step = Math.floor(pixels.length / k);
+  const step = Math.max(1, Math.floor(pixels.length / k));
   let centroids = [];
   for (let i = 0; i < k; i++) {
-    centroids.push([...pixels[i * step]]);
+    centroids.push([...pixels[Math.min(i * step, pixels.length - 1)]]);
   }
 
   for (let iter = 0; iter < iterations; iter++) {
     const clusters = Array.from({ length: k }, () => []);
 
-    // Assign pixels to closest centroid
     for (const p of pixels) {
       const nearestIdx = findNearestColor(p, centroids);
       clusters[nearestIdx].push(p);
     }
 
-    // Recalculate centroids
     const newCentroids = clusters.map((cluster, idx) => {
       if (cluster.length === 0) return centroids[idx];
       const sum = cluster.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1], acc[2] + p[2]], [0, 0, 0]);
@@ -137,7 +170,6 @@ function findNearestColor(pixel, palette) {
 
   for (let i = 0; i < palette.length; i++) {
     const p = palette[i];
-    // Euclidean distance squared
     const dist = (pixel[0] - p[0]) ** 2 + (pixel[1] - p[1]) ** 2 + (pixel[2] - p[2]) ** 2;
     if (dist < minDistance) {
       minDistance = dist;
@@ -153,7 +185,6 @@ function rgbToHex(r, g, b) {
 }
 
 function getColorName(r, g, b, defaultId) {
-  // Descriptive names based on hue/brightness
   if (r > 200 && g > 200 && b > 200) return 'Blanco / Claro';
   if (r < 50 && g < 50 && b < 50) return 'Negro / Oscuro';
   if (r > g + 50 && r > b + 50) return 'Rojo';

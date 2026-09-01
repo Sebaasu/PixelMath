@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import PresetGalleryModal from './components/PresetGalleryModal';
 import ImageUploadModal from './components/ImageUploadModal';
+import PokemonSearchModal from './components/PokemonSearchModal';
 import PixelEditor from './components/PixelEditor';
 import MathConfigPanel from './components/MathConfigPanel';
 import PrintWorksheet from './components/PrintWorksheet';
@@ -28,6 +29,7 @@ export default function App() {
   // Modals state
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isPokemonOpen, setIsPokemonOpen] = useState(false);
 
   // Compute math equations for palette based on current custom config
   const paletteWithMath = useMemo(() => {
@@ -54,7 +56,6 @@ export default function App() {
     setGridWidth(newSize);
     setGridHeight(newSize);
     
-    // Resize current grid matrix
     const newGrid = Array.from({ length: newSize }, (_, r) =>
       Array.from({ length: newSize }, (_, c) =>
         gridData[r] && gridData[r][c] !== undefined ? gridData[r][c] : 0
@@ -78,6 +79,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         onOpenPresets={() => setIsPresetsOpen(true)}
         onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenPokemon={() => setIsPokemonOpen(true)}
         onPrint={handlePrint}
       />
 
@@ -112,9 +114,9 @@ export default function App() {
             {/* Switch to preview button banner */}
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between shadow-md gap-4">
               <div>
-                <h3 className="text-lg font-bold font-heading">¿Listo para ver tu hoja impresa en Horizontal (Landscape)?</h3>
+                <h3 className="text-lg font-bold font-heading">¿Listo para ver tu hoja impresa?</h3>
                 <p className="text-sm opacity-90">
-                  Revisa el diseño aprovechado a 2 columnas con el arte a la izquierda y la leyenda matemática a la derecha.
+                  Revisa la disposición horizontal con el arte a la derecha (2/3 de hoja) y la leyenda vertical a la izquierda.
                 </p>
               </div>
               <button
@@ -154,6 +156,12 @@ export default function App() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onImageProcessed={handleImageProcessed}
+      />
+
+      <PokemonSearchModal
+        isOpen={isPokemonOpen}
+        onClose={() => setIsPokemonOpen(false)}
+        onPokemonSelected={handleImageProcessed}
       />
     </div>
   );
