@@ -3,8 +3,6 @@ import Navbar from './components/Navbar';
 import PresetGalleryModal from './components/PresetGalleryModal';
 import ImageUploadModal from './components/ImageUploadModal';
 import PokemonSearchModal from './components/PokemonSearchModal';
-import MovieCharactersModal from './components/MovieCharactersModal';
-import FanArtSearchModal from './components/FanArtSearchModal';
 import PixelEditor from './components/PixelEditor';
 import MathConfigPanel from './components/MathConfigPanel';
 import PrintWorksheet from './components/PrintWorksheet';
@@ -32,8 +30,6 @@ export default function App() {
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isPokemonOpen, setIsPokemonOpen] = useState(false);
-  const [isMovieOpen, setIsMovieOpen] = useState(false);
-  const [isFanArtOpen, setIsFanArtOpen] = useState(false);
 
   // Compute math equations for palette based on current custom config
   const paletteWithMath = useMemo(() => {
@@ -72,7 +68,7 @@ export default function App() {
     setActiveTab('print');
     setTimeout(() => {
       window.print();
-    }, 300);
+    }, 400);
   };
 
   return (
@@ -84,8 +80,6 @@ export default function App() {
         onOpenPresets={() => setIsPresetsOpen(true)}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenPokemon={() => setIsPokemonOpen(true)}
-        onOpenMovieCharacters={() => setIsMovieOpen(true)}
-        onOpenFanArt={() => setIsFanArtOpen(true)}
         onPrint={handlePrint}
       />
 
@@ -144,7 +138,9 @@ export default function App() {
               gridWidth={gridWidth}
               gridHeight={gridHeight}
               title={worksheetTitle}
+              onChangeTitle={setWorksheetTitle}
               studentName={studentName}
+              onChangeStudentName={setStudentName}
               showAnswerKey={showAnswerKey}
             />
           </div>
@@ -168,18 +164,6 @@ export default function App() {
         isOpen={isPokemonOpen}
         onClose={() => setIsPokemonOpen(false)}
         onPokemonSelected={handleImageProcessed}
-      />
-
-      <MovieCharactersModal
-        isOpen={isMovieOpen}
-        onClose={() => setIsMovieOpen(false)}
-        onCharacterSelected={handleImageProcessed}
-      />
-
-      <FanArtSearchModal
-        isOpen={isFanArtOpen}
-        onClose={() => setIsFanArtOpen(false)}
-        onImageSelected={handleImageProcessed}
       />
     </div>
   );

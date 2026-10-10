@@ -21,19 +21,19 @@ body {
 @media print {
   @page {
     size: landscape;
-    margin: 0mm;
+    margin: 5mm;
   }
   
   html, body {
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
     background-color: white !important;
     color: black !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    overflow: visible !important;
   }
 
   .no-print {
@@ -41,12 +41,12 @@ body {
   }
 
   .print-page {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
-    margin: 0 !important;
-    padding: 8mm !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 188mm !important;
+    max-height: 188mm !important;
+    margin: 0 auto !important;
+    padding: 2mm 4mm !important;
     box-shadow: none !important;
     border: none !important;
     page-break-after: always !important;
@@ -55,6 +55,9 @@ body {
     break-inside: avoid !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
 
   .print-page:last-child {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Printer, Image as ImageIcon, Sparkles, Zap, Film, Search } from 'lucide-react';
+import { Palette, Printer, Image as ImageIcon, Sparkles, Zap } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
@@ -7,8 +7,6 @@ export default function Navbar({
   onOpenPresets,
   onOpenUpload,
   onOpenPokemon,
-  onOpenMovieCharacters,
-  onOpenFanArt,
   onPrint
 }) {
   return (
@@ -30,24 +28,6 @@ export default function Navbar({
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <button
-              onClick={onOpenFanArt}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-700/50 rounded-xl transition-all shadow-sm"
-              title="Buscar arte fan de películas en la API de Openverse (Frozen, Star Wars, Minions, Disney)"
-            >
-              <Search className="w-4 h-4 text-cyan-400" />
-              <span className="hidden sm:inline">Buscar Fan-Art</span>
-            </button>
-
-            <button
-              onClick={onOpenMovieCharacters}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-pink-300 bg-pink-950/40 hover:bg-pink-900/60 border border-pink-700/50 rounded-xl transition-all shadow-sm"
-              title="Personajes de Películas (Mickey, Stitch, Spider-Man, Mario, Bob Esponja)"
-            >
-              <Film className="w-4 h-4 text-pink-400" />
-              <span className="hidden sm:inline">Películas</span>
-            </button>
-
             <button
               onClick={onOpenPokemon}
               className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-amber-300 bg-amber-950/40 hover:bg-amber-900/60 border border-amber-700/50 rounded-xl transition-all shadow-sm"

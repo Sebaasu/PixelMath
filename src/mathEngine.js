@@ -37,7 +37,18 @@ export const MATH_PRESETS = [
 ];
 
 /**
+ * Checks if a color represents White (should not be colored on paper)
+ */
+export function isWhiteColor(colorItem) {
+  if (!colorItem) return true;
+  const hex = (colorItem.hex || '').toLowerCase().trim();
+  const name = (colorItem.name || '').toLowerCase().trim();
+  return hex === '#ffffff' || hex === '#fff' || name === 'blanco' || name.startsWith('blanco');
+}
+
+/**
  * Generates custom math operations for each color in the palette based on user configuration.
+ * Automatically excludes White color because paper is already white.
  */
 export function generateMathForPalette(palette, config = DEFAULT_MATH_CONFIG) {
   const {
@@ -50,13 +61,16 @@ export function generateMathForPalette(palette, config = DEFAULT_MATH_CONFIG) {
 
   const activeOperators = operators.length > 0 ? operators : ['+'];
 
-  return palette.map((colorItem, index) => {
+  // Filter out White / Background colors from the math exercises list
+  const activePalette = (palette || []).filter(item => !isWhiteColor(item));
+
+  return activePalette.map((colorItem, index) => {
     let targetValue;
 
     if (targetAssignment === 'sequential') {
       targetValue = minTarget + index;
     } else {
-      const step = Math.max(1, Math.floor((maxTarget - minTarget) / Math.max(1, palette.length - 1)));
+      const step = Math.max(1, Math.floor((maxTarget - minTarget) / Math.max(1, activePalette.length - 1)));
       targetValue = minTarget + index * step;
     }
 
