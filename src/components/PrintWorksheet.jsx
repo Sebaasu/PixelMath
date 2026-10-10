@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil, CheckSquare, Square } from 'lucide-react';
 
 export default function PrintWorksheet({
   gridData,
@@ -10,12 +10,32 @@ export default function PrintWorksheet({
   onChangeTitle,
   studentName,
   onChangeStudentName,
-  showAnswerKey
+  showAnswerKey,
+  onToggleAnswerKey
 }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-6xl mx-auto">
+    <div className="flex flex-col items-center gap-6 w-full max-w-6xl mx-auto">
+      {/* Quick toggle bar visible in browser preview (not printed) */}
+      <div className="no-print w-full flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-300">
+        <span className="text-slate-400 font-medium">Opciones de Impresión:</span>
+        <button
+          type="button"
+          onClick={onToggleAnswerKey}
+          className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer py-1 px-2 rounded-lg hover:bg-slate-800"
+        >
+          {showAnswerKey ? (
+            <CheckSquare className="w-4 h-4 text-indigo-400 shrink-0" />
+          ) : (
+            <Square className="w-4 h-4 text-slate-500 shrink-0" />
+          )}
+          <span className="font-semibold">
+            {showAnswerKey ? 'Hoja de solución activada (Pág. 2)' : 'Hoja de solución desactivada (solo Pág. 1)'}
+          </span>
+        </button>
+      </div>
+
       {/* PAGE 1: Coloring Worksheet - LANDSCAPE (1/3 Left Legend | 2/3 Right PixelArt) */}
       <div className="print-page bg-white p-5 border border-slate-300 shadow-xl rounded-2xl w-full flex flex-col justify-between h-[590px] print:h-screen print:max-h-screen box-border overflow-hidden">
         

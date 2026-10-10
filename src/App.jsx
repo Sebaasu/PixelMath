@@ -23,7 +23,7 @@ export default function App() {
   const [mathConfig, setMathConfig] = useState(DEFAULT_MATH_CONFIG);
   const [worksheetTitle, setWorksheetTitle] = useState(initialPreset.name);
   const [studentName, setStudentName] = useState('');
-  const [showAnswerKey, setShowAnswerKey] = useState(true);
+  const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [mathSeed, setMathSeed] = useState(0);
 
   // Modals state
@@ -142,6 +142,7 @@ export default function App() {
               studentName={studentName}
               onChangeStudentName={setStudentName}
               showAnswerKey={showAnswerKey}
+              onToggleAnswerKey={() => setShowAnswerKey(!showAnswerKey)}
             />
           </div>
         )}
